@@ -1,7 +1,7 @@
 const estado_inicial = [
-  [1, 5, 2],
-  [4, 8, 3],
-  [0, 7, 6],
+  [4, 0, 6],
+  [3, 7, 5],
+  [2, 8, 1],
 ];
 
 const estadofinal = [
@@ -18,13 +18,14 @@ let estado_final = {
 let no_inicial = {
   estado: estado_inicial,
   movimento: [],
+  proximidade: 0,
 };
 
 let avaliados = [];
 let fronteira = [no_inicial];
 
 function displayArray(matriz) {
-  matriz.forEach((linha) => {
+  matriz.estado.forEach((linha) => {
     document.write('[ ');
     linha.forEach((num) => {
       document.write(num + ' ');
@@ -33,19 +34,10 @@ function displayArray(matriz) {
     document.write('<br/>');
   });
   document.write('<hr/>');
-} //Exibe uma matriz
-
-function displayMov(array) {
-  array.forEach((mov) => {
+  matriz.movimento.forEach((mov) => {
     document.write(mov + ' ');
   });
-} // Exibe os movimentos
-
-function displayListArray(matriz) {
-  matriz.forEach((arr) => {
-    displayArray(arr.estado);
-  });
-} // Exibe uma lista de matrizes
+} //Exibe uma matriz
 
 function compareArray(matriz1, matriz2) {
   for (let linha = 0; linha < 3; linha++) {
@@ -57,6 +49,16 @@ function compareArray(matriz1, matriz2) {
   }
   return true;
 } // Compara 1 matriz com 1 matriz
+
+function isInedited(matriz, listaMatriz = avaliados) {
+  saida = true;
+  listaMatriz.forEach((arr) => {
+    if (compareArray(arr, matriz)) {
+      saida = false;
+    }
+  });
+  return saida;
+} // Confere se ja não existe uma matriz em uma lista de matrizes
 
 function generateChilds(matriz) {
   // matriz = {estado: movimento:}
@@ -90,7 +92,7 @@ function generateChilds(matriz) {
     filho.estado[zeroLinha][zeroColuna] =
       filho.estado[zeroLinha - 1][zeroColuna];
     filho.estado[zeroLinha - 1][zeroColuna] = 0;
-    filho.movimento.push('^');
+    filho.movimento.push('&uarr;');
     filhos.push(filho);
   }
 
@@ -111,7 +113,7 @@ function generateChilds(matriz) {
     filho.estado[zeroLinha][zeroColuna] =
       filho.estado[zeroLinha + 1][zeroColuna];
     filho.estado[zeroLinha + 1][zeroColuna] = 0;
-    filho.movimento.push('v');
+    filho.movimento.push('&darr;');
     filhos.push(filho);
   }
 
@@ -132,7 +134,7 @@ function generateChilds(matriz) {
     filho.estado[zeroLinha][zeroColuna] =
       filho.estado[zeroLinha][zeroColuna - 1];
     filho.estado[zeroLinha][zeroColuna - 1] = 0;
-    filho.movimento.push('<');
+    filho.movimento.push('&larr;');
     filhos.push(filho);
   }
 
@@ -153,24 +155,37 @@ function generateChilds(matriz) {
     filho.estado[zeroLinha][zeroColuna] =
       filho.estado[zeroLinha][zeroColuna + 1];
     filho.estado[zeroLinha][zeroColuna + 1] = 0;
-    filho.movimento.push('>');
+    filho.movimento.push('&rarr;');
     filhos.push(filho);
   }
 
   return filhos;
 } // Gera de 2 a 4 filhos de matriz
 
-function isInedited(matriz, listaMatriz) {
-  saida = true;
-  listaMatriz.forEach((arr) => {
-    if (compareArray(arr, matriz)) {
-      saida = false;
-    }
-  });
-  return saida;
-} // Confere se ja não existe uma matriz em uma lista de matrizes
+function heuristic(matriz) {
+  let contador = 0;
 
-//3.265.920 combinações possíveis
+  matriz.estado.forEach((item, indexLinha) => {
+    item.forEach((value, indexColuna) => {
+      if (value == 0) {
+        value = 9;
+      }
+
+      let colunax = (value - 1) % 3;
+      let linhax = Math.floor((value - 1) / 3);
+
+      let linha = Math.abs(indexLinha - linhax);
+      let coluna = Math.abs(colunax - indexColuna);
+
+      contador += linha + coluna;
+    });
+  });
+
+  return contador;
+}
+
+let cont = 0;
+let contador = 100;
 
 if (fronteira.length == 0) {
   document.write('<h3>Programa finalizado sem solução.</h3>');
@@ -180,20 +195,48 @@ if (fronteira.length == 0) {
 
     if (compareArray(no_atual, estado_final)) {
       document.write('<h3>Programa finalizado com solução.</h3>');
-      displayArray(no_atual.estado);
-      displayMov(no_atual.movimento);
+      document.write('<p>Estado avaliado:</p>');
+      displayArray(no_inicial);
+      document.write(
+        '<p>Estado final encontrado com <strong>' +
+          no_atual.movimento.length +
+          '</strong> movimentos</p>',
+      );
+      document.write(
+        '<p>Total de avaliados: <strong>' + avaliados.length + '</strong></p>',
+      );
+      displayArray(no_atual);
       break;
     } else {
       avaliados.push(no_atual);
+
       let childs = generateChilds(no_atual);
 
       fronteira.shift();
 
       childs.forEach((filho) => {
-        if (isInedited(filho, avaliados)) {
+        if (isInedited(filho)) {
+          filho.proximidade = heuristic(filho);
           fronteira.push(filho);
+          fronteira.sort((a, b) => {
+            if (a.proximidade > b.proximidade) {
+              return 1;
+            }
+            if (a.proximidade < b.proximidade) {
+              return -1;
+            }
+            return 0;
+          });
         }
       });
+      cont++;
+
+      if (cont == contador) {
+        console.log('Quantidade de avaliados: ' + avaliados.length);
+        console.log('Quantidade na fronteira: ' + fronteira.length);
+        console.log('Proximidade: ' + no_atual.proximidade);
+        contador += 100;
+      }
     }
   }
 }
