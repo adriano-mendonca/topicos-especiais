@@ -1,7 +1,7 @@
 const estado_inicial = [
-  [4, 0, 6],
-  [3, 7, 5],
-  [2, 8, 1],
+  [2, 1, 6],
+  [3, 5, 4],
+  [0, 8, 7],
 ];
 
 const estadofinal = [
@@ -186,13 +186,13 @@ function heuristic(matriz) {
 
 let cont = 0;
 let contador = 100;
-
+let c = 0;
 if (fronteira.length == 0) {
   document.write('<h3>Programa finalizado sem solução.</h3>');
 } else {
   while (true) {
     let no_atual = fronteira[0];
-
+    console.log(c++);
     if (compareArray(no_atual, estado_final)) {
       document.write('<h3>Programa finalizado com solução.</h3>');
       document.write('<p>Estado avaliado:</p>');
@@ -205,6 +205,12 @@ if (fronteira.length == 0) {
       document.write(
         '<p>Total de avaliados: <strong>' + avaliados.length + '</strong></p>',
       );
+      document.write(
+        '<p>Total na lista de estados na fronteira: <strong>' +
+          fronteira.length +
+          '</strong></p>',
+      );
+
       displayArray(no_atual);
       break;
     } else {
