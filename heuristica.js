@@ -1,7 +1,7 @@
 const estado_inicial = [
   [2, 1, 6],
-  [3, 5, 4],
-  [0, 8, 7],
+  [3, 5, 0],
+  [4, 8, 7],
 ];
 
 const estadofinal = [
@@ -58,7 +58,7 @@ function isInedited(matriz, listaMatriz = avaliados) {
     }
   });
   return saida;
-} // Confere se ja não existe uma matriz em uma lista de matrizes
+} // Confere se a matriz é inédita na lista
 
 function generateChilds(matriz) {
   // matriz = {estado: movimento:}
@@ -182,11 +182,13 @@ function heuristic(matriz) {
   });
 
   return contador;
-}
+} // Calcula a heurística da matriz
 
+// Contadores para exibição de dados
 let cont = 0;
 let contador = 100;
 let c = 0;
+
 if (fronteira.length == 0) {
   document.write('<h3>Programa finalizado sem solução.</h3>');
 } else {
